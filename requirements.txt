@@ -1,1 +1,4 @@
 google-cloud-bigquery==3.4.0
+pandas==1.5.2
+streamlit==1.15.1
+streamlit-authenticator==0.2.1
