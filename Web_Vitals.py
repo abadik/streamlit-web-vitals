@@ -9,8 +9,11 @@ from functions import (
     web_vital_metric_unit,
     web_vital_total_value,
 )
-from constants import metrics_data, web_vitals_quantile
+from constants import metrics_data, web_vitals_quantile, favicon
 
+
+# Page Setup
+st.set_page_config(page_title="wilio - Web Vitals", page_icon=favicon)
 
 # Load Queries
 queries = st.secrets["queries"]

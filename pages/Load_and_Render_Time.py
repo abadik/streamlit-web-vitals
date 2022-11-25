@@ -7,8 +7,11 @@ from functions import (
     filter_load_and_render_data,
     load_and_render_total_value,
 )
-from constants import load_and_render_time_quantile
+from constants import load_and_render_time_quantile, favicon
 
+
+# Page Setup
+st.set_page_config(page_title="wilio - Page Load and Render Time", page_icon=favicon)
 
 # Load Queries
 queries = st.secrets["queries"]

@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 
 metrics_data = dict(
     CLS=dict(first_breakpoint=0.1, second_breakpoint=0.25),
@@ -12,3 +13,5 @@ metrics_data = dict(
 web_vitals_quantile = 0.75
 
 load_and_render_time_quantile = 0.95
+
+favicon = Image.open("./assets/favicon.ico")
