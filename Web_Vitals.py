@@ -79,11 +79,18 @@ if authentication_status:
         metric=metric,
     )
 
+    # Slider
+    percentile = st.select_slider(
+        label="Percentile:",
+        options=list(range(5, 105, 5)),
+        value=web_vitals_quantile * 100,
+    )
+
     # Line Chart
     chart_data = (
         out[metric]
         .groupby("date")
-        .agg(func="quantile", q=web_vitals_quantile, numeric_only=True)
+        .agg(func="quantile", q=percentile / 100, numeric_only=True)
         .reset_index()
     )
     line_chart = alt.Chart(chart_data).encode(
@@ -91,11 +98,11 @@ if authentication_status:
         alt.Y(shorthand=metric, title="Time (ms)" if metric != "CLS" else "Score"),
     )
     st.write(
-        f"<center><b>{metric} ({web_vital_total_value(df=out,metric=metric, quantile=web_vitals_quantile)}{web_vital_metric_unit(metric)}) [75th percentil]</b></center>",
+        f"<center><b>{metric} ({web_vital_total_value(df=out,metric=metric, quantile=percentile/100)}{web_vital_metric_unit(metric)}) [{percentile}th percentile]</b></center>",
         unsafe_allow_html=True,
     )
     st.altair_chart(
-        altair_chart=line_chart.mark_line(interpolate="linear")
+        altair_chart=line_chart.mark_line(interpolate="basis")
         + line_chart.mark_point(filled=True, size=100),
         use_container_width=True,
     )

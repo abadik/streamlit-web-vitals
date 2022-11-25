@@ -55,6 +55,14 @@ if authentication_status:
         exact_url = st.checkbox(label="Exact URL", value=False)
 
     # Full Width Content
+
+    # Slider
+    percentile = st.select_slider(
+        label="Percentile:",
+        options=list(range(5, 105, 5)),
+        value=load_and_render_time_quantile * 100,
+    )
+
     # Filtered Data
     out = filter_load_and_render_data(
         df=data,
@@ -66,16 +74,14 @@ if authentication_status:
     )
 
     # Total Values
-    total_load_time, total_render_time = load_and_render_total_value(
-        out, quantile=load_and_render_time_quantile
-    )
+    total_load_time, total_render_time = load_and_render_total_value(out, quantile=percentile / 100)
 
     # Line Chart
     chart_data = (
         out[["page_load_time", "render_time"]]
         .rename(columns={"page_load_time": "Page Load Time", "render_time": "Render Time"})
         .groupby("date")
-        .agg(func="quantile", q=load_and_render_time_quantile, numeric_only=True)
+        .agg(func="quantile", q=percentile / 100, numeric_only=True)
         .reset_index()
         .melt("date")
     )
@@ -85,15 +91,14 @@ if authentication_status:
         alt.Color(
             shorthand="variable",
             title="",
-            legend=alt.Legend(orient="top", direction="horizontal"),
         ),
     )
     st.write(
-        f"<center><b>Page Load Time ({total_load_time} s) and Render Time ({total_render_time} s) [95th percentil]</b></center>",
+        f"<center><b>Page Load Time ({total_load_time} s) and Render Time ({total_render_time} s) [{percentile}th percentile]</b></center>",
         unsafe_allow_html=True,
     )
     st.altair_chart(
-        altair_chart=line_chart.mark_line(interpolate="linear")
+        altair_chart=line_chart.mark_line(interpolate="basis")
         + line_chart.mark_point(filled=True, size=100),
         use_container_width=True,
     )
