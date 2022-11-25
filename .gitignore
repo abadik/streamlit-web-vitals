@@ -2,3 +2,4 @@ venv
 /generate_keys.py
 /hashed_pw.pkl
 /.streamlit/secrets.toml
+/__pycache__
