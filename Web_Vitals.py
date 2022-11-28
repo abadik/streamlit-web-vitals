@@ -49,7 +49,7 @@ if authentication_status:
             max_value=data.index.max(),
             value=data.index.min(),
         )
-        domain = st.selectbox(label="Domain:", options=tuple(domains))
+        domain = st.selectbox(label="Domain:", options=tuple(domains), index=domains.index(".sk"))
         url = st.text_input(label="URL:", value="", help="Type the whole or part of the URL.")
         exact_url = st.checkbox(label="Exact URL", value=False)
 
