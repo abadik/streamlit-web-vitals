@@ -29,6 +29,7 @@ if authentication_status:
 
     # Options
     domains = sorted(list(data.domain.unique()))
+    devices = sorted(list(data.device.unique()))
 
     # Title
     st.title("Load and Render Time")
@@ -45,6 +46,7 @@ if authentication_status:
             value=data.index.min(),
         )
         domain = st.selectbox(label="Domain:", options=tuple(domains), index=domains.index(".sk"))
+        device = st.multiselect(label="Device category:", options=devices, default=[])
 
     # Second Column
     with col2:
@@ -74,6 +76,7 @@ if authentication_status:
         date_from=date_from,
         date_to=date_to,
         domain=domain,
+        devices=device,
     )
 
     # Total Values

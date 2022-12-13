@@ -34,6 +34,7 @@ if authentication_status:
 
     # Options
     domains = sorted(list(data.domain.unique()))
+    devices = sorted(list(data.device.unique()))
 
     # Title
     st.title("Web Vitals")
@@ -52,6 +53,7 @@ if authentication_status:
         domain = st.selectbox(label="Domain:", options=tuple(domains), index=domains.index(".sk"))
         url = st.text_input(label="URL:", value="", help="Type the whole or part of the URL.")
         exact_url = st.checkbox(label="Exact URL", value=False)
+        device = st.multiselect(label="Device category:", options=devices, default=[])
 
     # Second Column
     with col2:
@@ -80,6 +82,7 @@ if authentication_status:
         date_to=date_to,
         domain=domain,
         metric=metric,
+        devices=device,
     )
 
     # Slider

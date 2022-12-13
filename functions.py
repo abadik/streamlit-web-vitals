@@ -44,7 +44,7 @@ def auth():
 
 # Data Manipulation
 def filter_web_vitals_data(
-    df, *, date_from="", date_to="", domain="", url="", exact_url=False, metric=""
+    df, *, date_from="", date_to="", domain="", url="", exact_url=False, metric="", devices=[]
 ):
     if domain:
         df = df[df.domain == domain]
@@ -59,11 +59,13 @@ def filter_web_vitals_data(
         df = df[df.index.date <= date_to]
     if metric:
         df = df[df[metric].notnull()]
+    if devices and len(devices) > 0:
+        df = df[df.device.isin(devices)]
     return df
 
 
 def filter_load_and_render_data(
-    df, *, date_from="", date_to="", domain="", url="", exact_url=False
+    df, *, date_from="", date_to="", domain="", url="", exact_url=False, devices=[]
 ):
     if domain:
         df = df[df.domain == domain]
@@ -76,6 +78,8 @@ def filter_load_and_render_data(
         df = df[df.index.date >= date_from]
     if date_to:
         df = df[df.index.date <= date_to]
+    if devices and len(devices) > 0:
+        df = df[df.device.isin(devices)]
     return df
 
 
