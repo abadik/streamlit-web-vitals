@@ -124,6 +124,14 @@ def text_score(value, metric):
     if value <= metrics_data[metric]["first_breakpoint"]:
         return "GOOD"
     elif value <= metrics_data[metric]["second_breakpoint"]:
-        return "NEEDS IMPORVENET"
+        return "NEEDS IMPROVEMENT"
     else:
         return "POOR"
+
+def score_color(value,metric):
+    if value <= metrics_data[metric]["first_breakpoint"]:
+        return "#0CCE6B"
+    elif value <= metrics_data[metric]["second_breakpoint"]:
+        return "#FFA400"
+    else:
+        return "#FF4E42"

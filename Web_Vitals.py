@@ -9,6 +9,7 @@ from functions import (
     web_vital_metric_unit,
     web_vital_total_value,
     text_score,
+    score_color,
 )
 from constants import metrics_data, web_vitals_quantile, favicon
 from pandas import DataFrame
@@ -166,29 +167,25 @@ if authentication_status:
         x if x in top_page_types else "other" for x in renamed_out.loc[:, ("page_type")]
     ]
     renamed_out["score"] = [text_score(x, metric) for x in renamed_out.loc[:, (metric)]]
+    renamed_out["color"] = [score_color(x, metric) for x in renamed_out.loc[:, (metric)]]
 
     bar_chart = (
         alt.Chart(renamed_out)
-        .transform_aggregate(count="count()", groupby=["score", "page_type"])
+        .transform_aggregate(count="count()", groupby=["color", "score", "page_type"])
         .transform_joinaggregate(total="sum(count)", groupby=["page_type"])
         .transform_calculate(frac=alt.datum.count / alt.datum.total)
         .mark_bar()
         .encode(
             x=alt.X("page_type:O", title="Page type"),
             y=alt.Y("count:Q", stack="normalize", axis=alt.Axis(title="Percent", format="%")),
-            color=alt.Color(
-                "score:N",
-                scale=alt.Scale(
-                    range=["#0CCE6B", "#FFA400", "#FF4E42"],
-                ),
-                legend=None,
-            ),
+            color=alt.Color("color", scale=None, legend=None),
             tooltip=[
                 alt.Tooltip("score:N", title="Score"),
                 alt.Tooltip("count:Q", title="Total"),
                 alt.Tooltip("frac:Q", title="Percentage", format=".0%"),
                 alt.Tooltip("page_type:N", title="Page type"),
             ],
+            order=alt.Order("score", sort="descending"),
         )
     )
 
