@@ -8,8 +8,10 @@ from functions import (
     read_html_component,
     web_vital_metric_unit,
     web_vital_total_value,
+    text_score,
 )
 from constants import metrics_data, web_vitals_quantile, favicon
+from pandas import DataFrame
 
 
 # Page Setup
@@ -70,7 +72,14 @@ if authentication_status:
             f'{metrics_data[metric]["first_breakpoint"]}{web_vital_metric_unit(metric)}',
             f'{metrics_data[metric]["second_breakpoint"]}{web_vital_metric_unit(metric)}',
         )
-        html(html=breakpoints_html, height=100)
+        html(html=breakpoints_html, height=104)
+        page_type = st.multiselect(
+            label="Page type:",
+            options=sorted(
+                list(data[(data.domain == domain) & (data[metric].notnull())].page_type.unique())
+            ),
+            default=[],
+        )
 
     # Full Width Content
     # Filtered Data
@@ -83,6 +92,7 @@ if authentication_status:
         domain=domain,
         metric=metric,
         devices=device,
+        page_types=page_type,
     )
 
     # Slider
@@ -112,6 +122,82 @@ if authentication_status:
         + line_chart.mark_point(filled=True, size=100),
         use_container_width=True,
     )
+
+    value_counts = out["page_type"].value_counts()
+
+    if len(page_type) == 1:
+        top_number = 1
+    else:
+        top_number = st.select_slider(
+            label="Top N:",
+            options=list(range(1, len(list(value_counts)) + 1, 1)),
+            value=min(5, len(list(value_counts))),
+        )
+
+    top_page_types = value_counts.index.tolist()[: min(top_number, len(list(value_counts)))] + [
+        "other"
+    ]
+    t = {}
+    for k, v in dict(value_counts).items():
+        if k in top_page_types:
+            t[k] = v
+        else:
+            try:
+                t["other"] += v
+            except:
+                t["other"] = v
+
+    pie = (
+        alt.Chart(DataFrame([t], index=["value"]).transpose().reset_index())
+        .encode(
+            theta=alt.Theta("value:Q"),
+            color=alt.Color("index:N", legend=alt.Legend(title="Page type")),
+            tooltip=[
+                alt.Tooltip("index:N", title="Page type"),
+                alt.Tooltip("value:Q", title="Count"),
+            ],
+        )
+        .mark_arc(innerRadius=50)
+        .properties(title="Records by page type")
+    )
+
+    renamed_out = out.loc[:, ("page_type", metric)]
+    renamed_out["page_type"] = [
+        x if x in top_page_types else "other" for x in renamed_out.loc[:, ("page_type")]
+    ]
+    renamed_out["score"] = [text_score(x, metric) for x in renamed_out.loc[:, (metric)]]
+
+    bar_chart = (
+        alt.Chart(renamed_out)
+        .transform_aggregate(count="count()", groupby=["score", "page_type"])
+        .transform_joinaggregate(total="sum(count)", groupby=["page_type"])
+        .transform_calculate(frac=alt.datum.count / alt.datum.total)
+        .mark_bar()
+        .encode(
+            x=alt.X("page_type:O", title="Page type"),
+            y=alt.Y("count:Q", stack="normalize", axis=alt.Axis(title="Percent", format="%")),
+            color=alt.Color(
+                "score:N",
+                scale=alt.Scale(
+                    range=["#0CCE6B", "#FFA400", "#FF4E42"],
+                ),
+                legend=None,
+            ),
+            tooltip=[
+                alt.Tooltip("score:N", title="Score"),
+                alt.Tooltip("count:Q", title="Total"),
+                alt.Tooltip("frac:Q", title="Percentage", format=".0%"),
+                alt.Tooltip("page_type:N", title="Page type"),
+            ],
+        )
+    )
+
+    col3, col4 = st.columns(spec=(1, 1), gap="medium")
+
+    with col3:
+        st.altair_chart(altair_chart=pie, use_container_width=True)
+    with col4:
+        st.altair_chart(altair_chart=bar_chart, use_container_width=True)
 
     # Download Data
     show_columns = [x for x in list(out.columns) if not x in metrics or metrics.remove(x)] + [

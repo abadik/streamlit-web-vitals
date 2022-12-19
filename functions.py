@@ -4,6 +4,7 @@ from google.oauth2 import service_account
 from google.cloud import bigquery
 from pandas import DataFrame, to_datetime
 from streamlit_authenticator import Authenticate
+from constants import metrics_data
 
 # Big Query
 credentials = service_account.Credentials.from_service_account_info(
@@ -44,7 +45,16 @@ def auth():
 
 # Data Manipulation
 def filter_web_vitals_data(
-    df, *, date_from="", date_to="", domain="", url="", exact_url=False, metric="", devices=[]
+    df,
+    *,
+    date_from="",
+    date_to="",
+    domain="",
+    url="",
+    exact_url=False,
+    metric="",
+    devices=[],
+    page_types=[],
 ):
     if domain:
         df = df[df.domain == domain]
@@ -61,6 +71,8 @@ def filter_web_vitals_data(
         df = df[df[metric].notnull()]
     if devices and len(devices) > 0:
         df = df[df.device.isin(devices)]
+    if page_types and len(page_types) > 0:
+        df = df[df.page_type.isin(page_types)]
     return df
 
 
@@ -96,7 +108,7 @@ def web_vital_metric_unit(metric):
 
 def web_vital_total_value(df, metric, *, quantile=0.75):
     if metric == "CLS":
-        return "{0:.2f}".format(df[metric].quantile(quantile))
+        return float("{0:.2f}".format(df[metric].quantile(quantile)))
     else:
         return int(round(df[metric].quantile(quantile)))
 
@@ -106,3 +118,12 @@ def load_and_render_total_value(df, *, quantile=0.95):
         "{0:.1f}".format(df["page_load_time"].quantile(quantile)),
         "{0:.1f}".format(df["render_time"].quantile(quantile)),
     )
+
+
+def text_score(value, metric):
+    if value <= metrics_data[metric]["first_breakpoint"]:
+        return "GOOD"
+    elif value <= metrics_data[metric]["second_breakpoint"]:
+        return "NEEDS IMPORVENET"
+    else:
+        return "POOR"
