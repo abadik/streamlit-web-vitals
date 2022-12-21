@@ -77,7 +77,7 @@ def filter_web_vitals_data(
 
 
 def filter_load_and_render_data(
-    df, *, date_from="", date_to="", domain="", url="", exact_url=False, devices=[]
+    df, *, date_from="", date_to="", domain="", url="", exact_url=False, devices=[], page_types=[]
 ):
     if domain:
         df = df[df.domain == domain]
@@ -92,6 +92,8 @@ def filter_load_and_render_data(
         df = df[df.index.date <= date_to]
     if devices and len(devices) > 0:
         df = df[df.device.isin(devices)]
+    if page_types and len(page_types) > 0:
+        df = df[df.page_type.isin(page_types)]
     return df
 
 
@@ -128,7 +130,8 @@ def text_score(value, metric):
     else:
         return "POOR"
 
-def score_color(value,metric):
+
+def score_color(value, metric):
     if value <= metrics_data[metric]["first_breakpoint"]:
         return "#0CCE6B"
     elif value <= metrics_data[metric]["second_breakpoint"]:

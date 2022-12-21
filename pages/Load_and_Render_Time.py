@@ -46,7 +46,8 @@ if authentication_status:
             value=data.index.min(),
         )
         domain = st.selectbox(label="Domain:", options=tuple(domains), index=domains.index(".sk"))
-        device = st.multiselect(label="Device category:", options=devices, default=[])
+        url = st.text_input(label="URL:", value="", help="Type the whole or part of the URL.")
+        exact_url = st.checkbox(label="Exact URL", value=False)
 
     # Second Column
     with col2:
@@ -56,8 +57,12 @@ if authentication_status:
             max_value=data.index.max(),
             value=data.index.max(),
         )
-        url = st.text_input(label="URL:", value="", help="Type the whole or part of the URL.")
-        exact_url = st.checkbox(label="Exact URL", value=False)
+        device = st.multiselect(label="Device category:", options=devices, default=[])
+        page_type = st.multiselect(
+            label="Page type:",
+            options=sorted(list(data[data.domain == domain].page_type.unique())),
+            default=[],
+        )
 
     # Full Width Content
 
@@ -77,6 +82,7 @@ if authentication_status:
         date_to=date_to,
         domain=domain,
         devices=device,
+        page_types=page_type,
     )
 
     # Total Values
